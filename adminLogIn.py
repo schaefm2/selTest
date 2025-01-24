@@ -64,6 +64,7 @@ def main():
 def bruteForcePassword(driver, attempts, hardness):
         # Attempt to log in
     print("Strap in, this could take quite a while")
+    mercy = random.randint(250, 350)
     try:
 
         acctBtn = WebDriverWait(driver, 10).until(
@@ -89,13 +90,18 @@ def bruteForcePassword(driver, attempts, hardness):
             password = randomhard()
         else:
             password = randomword()
+        if (n % 100 == 0):
+            print(n)
+        if (n == mercy):
+            print("Mercy Rule. In actuality, it would likely take many, many hours of this to achieve results")
+            password = "admin123"
         try:
-            print(f"Trying password: {password}")
             passwordField = WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.ID, "password"))
             )
             passwordField.clear()
             passwordField.send_keys(password)
+            print(f"Trying password: {password}")
             passwordField.send_keys(Keys.RETURN)
         except Exception as e:
             print(f"Could not enter text: {e}")
