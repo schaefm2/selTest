@@ -33,6 +33,9 @@ def main():
     exit()
 
 def attempt_sql_injections(driver):
+    # Note: This is very basic.
+    # I was thinking we coud incorporate sql map for this portion of the fuzz tester
+    
     sql_payloads = [
         "' OR '1'='1",
         "' OR '1'='1' --",
@@ -44,7 +47,6 @@ def attempt_sql_injections(driver):
         "' OR 1=1;--",
         "' OR 1=1 OR ''='"
         "' OR 1=1 --",
-
     ]
 
     for payload in sql_payloads:
