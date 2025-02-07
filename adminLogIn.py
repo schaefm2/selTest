@@ -143,9 +143,9 @@ def bruteForcePassword(driver, hardness, username):
             password = randomword()
         if (n % 100 == 0):
             print(n)
-        #if (n == mercy):
-            #print("Mercy Rule. In actuality, it would likely take many, many hours of this to achieve results")
-            #password = "admin123"
+        if (n == mercy):
+            print("Mercy Rule. In actuality, it would likely take many, many hours of this to achieve results")
+            password = "admin123"
         try:
             passwordField = WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.ID, "password"))
