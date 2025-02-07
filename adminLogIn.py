@@ -3,7 +3,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
-
+from multiprocessing import Process
 import argparse
 import time
 import random, string
@@ -71,8 +71,13 @@ def start_tester(method, target):
     driver.quit()
     exit()
 
-def main():    
-    start_tester(method, target)
+def main():
+    p = []
+    if __name__ == '__main__':
+        for n in range(threads):
+            p.append(Process(target=start_tester, args=(method, target)))
+            p[n].start()
+    #start_tester(method, target)
 
 def databasePassword(driver, target):
     try:
