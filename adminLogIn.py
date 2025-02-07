@@ -3,6 +3,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
+
 import argparse
 import time
 import random, string
@@ -10,6 +11,18 @@ import random, string
 letters = string.ascii_lowercase
 num_options = "0123456789"
 all_letters = string.ascii_letters.join(num_options)
+
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-method', required=True) # valid types: sql, brute, dict
+parser.add_argument('-target', nargs='?', const="admin@juice-sh.op", default="admin@juice-sh.op")
+parser.add_argument('-threads', nargs='?', const=1, type=int, default=1)
+args = parser.parse_args()
+method = str(args.method)
+target = str(args.target)
+threads = int(args.threads)
+
 
 def randomword():
     length = random.randint(3,7)
@@ -22,15 +35,7 @@ def randomhard():
     length = random.randint(1, 16)
     return ''.join(random.choice(all_letters) for i in range (length))
 
-
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-method', required=True) # valid types: sql, brute, dict
-    parser.add_argument('-target', nargs='?', const="admin@juice-sh.op")
-    args = parser.parse_args()
-    method = str(args.method)
-    target = str(args.target)
-    
+def init_driver():
     # Initialize the WebDriver
     driver = webdriver.Chrome()  # Use the browser of your choice (e.g., Firefox, Edge)
 
@@ -46,13 +51,17 @@ def main():
         print("Overlay dismissed.")
     except Exception as e:
         print(f"Could not dismiss the overlay: {e}")
+    return(driver)
 
+
+def start_tester(method, target):
+    driver = init_driver()
     if(method == "sql"):
         logInAdminSql(driver)
     elif(method == "brute"):
-        bruteForcePassword(driver, attempts, False, target)
+        bruteForcePassword(driver, False, target)
     elif(method == "hardbrute"):
-        bruteForcePassword(driver, attempts, True, target)
+        bruteForcePassword(driver, True, target)
     elif(method == "dict"):
         databasePassword(driver, target)
     else:
@@ -61,6 +70,9 @@ def main():
     input("Press Enter to close the browser...")
     driver.quit()
     exit()
+
+def main():    
+    start_tester(method, target)
 
 def databasePassword(driver, target):
     try:
