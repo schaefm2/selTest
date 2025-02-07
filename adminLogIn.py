@@ -106,7 +106,7 @@ def databasePassword(driver, target):
             )
                 passwordField.clear()
                 passwordField.send_keys(password)
-                print(f"Trying password: {password}")
+                #print(f"Trying password: {password}")
                 passwordField.send_keys(Keys.RETURN)
             except Exception as e:
                 print(f"Could not enter text: {e}")
@@ -114,7 +114,7 @@ def databasePassword(driver, target):
 def bruteForcePassword(driver, hardness, username):
         # Attempt to log in
     print("Strap in, this could take quite a while")
-    mercy = random.randint(250, 350)
+    mercy = random.randint(1000, 1500)
     try:
 
         acctBtn = WebDriverWait(driver, 10).until(
@@ -152,7 +152,7 @@ def bruteForcePassword(driver, hardness, username):
             )
             passwordField.clear()
             passwordField.send_keys(password)
-            print(f"Trying password: {password}")
+            #print(f"Trying password: {password}")
             passwordField.send_keys(Keys.RETURN)
         except Exception as e:
             print(f"Could not enter text: {e}")
