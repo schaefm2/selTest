@@ -37,11 +37,11 @@ def randomhard():
 
 def init_driver():
     # Initialize the WebDriver
-    driver = webdriver.Chrome()  # Use the browser of your choice (e.g., Firefox, Edge)
-
+    
     # Open the webpage
+    driver = webdriver.Chrome()  # Use the browser of your choice (e.g., Firefox, Edge)
     driver.get("http://localhost:3000/")
-
+    driver.set_window_size(1280, 720)
     # Wait for and dismiss the overlay
     try:
         dismissBtn = WebDriverWait(driver, 10).until(
@@ -56,8 +56,6 @@ def init_driver():
 
 def start_tester(method, username):
     driver = init_driver()
-    print(method)
-    print(username)
     if(method == "brute"):
         bruteForcePassword(driver, False, username)
     elif(method == "hard"):
@@ -110,6 +108,7 @@ def databasePassword(driver, target):
                 passwordField.send_keys(Keys.RETURN)
             except Exception as e:
                 print(f"Could not enter text: {e}")
+                exit()
 
 def bruteForcePassword(driver, hardness, username):
         # Attempt to log in
