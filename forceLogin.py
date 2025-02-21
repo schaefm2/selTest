@@ -40,7 +40,7 @@ def init_driver():
     
     # Open the webpage
     driver = webdriver.Chrome()  # Use the browser of your choice (e.g., Firefox, Edge)
-    driver.get("http://localhost:3000/")
+    driver.get("http://localhost:3000/#/login/")
     driver.set_window_size(1600, 900)
     # Wait for and dismiss the overlay
     try:
@@ -77,19 +77,6 @@ def main():
             p[n].start()
 
 def databasePassword(driver, target):
-    try:
-
-        acctBtn = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.ID, "navbarAccount"))
-        )
-        acctBtn.click()
-
-        logInBtn = WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.ID, "navbarLoginButton"))
-        )
-        logInBtn.click()
-    except Exception as e:
-        print(f"Could not click log in buttons: {e}")
 
     emailField = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.ID, "email"))
@@ -114,19 +101,6 @@ def bruteForcePassword(driver, hardness, username):
         # Attempt to log in
     print("Strap in, this could take quite a while")
     mercy = random.randint(1000, 1500)
-    try:
-
-        acctBtn = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.ID, "navbarAccount"))
-        )
-        acctBtn.click()
-
-        logInBtn = WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.ID, "navbarLoginButton"))
-        )
-        logInBtn.click()
-    except Exception as e:
-        print(f"Could not click log in buttons: {e}")
 
     emailField = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.ID, "email"))
