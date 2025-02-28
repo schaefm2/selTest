@@ -5,7 +5,9 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 import time
 import requests
+import json
 
+# TODO: add routing to score-board to check each achievement after finishing
 
 
 def main():
@@ -13,8 +15,9 @@ def main():
     driver = webdriver.Chrome()  # Use the browser of your choice (e.g., Firefox, Edge)
 
     # Open the webpage
-    driver.get("https://juice-shop.herokuapp.com/#/") # used this originally and worked but debugging
+    # driver.get("https://juice-shop.herokuapp.com/#/") # used this originally and worked but debugging
     # driver.get("https://juice-shop.herokuapp.com")
+    driver.get("http://localhost:3000/#/") 
 
     # Wait for and dismiss the overlay
     try:
@@ -41,7 +44,7 @@ def main():
         # Now use the token to add a product to another user's basket
         basketid = acquire_basket_id(driver)
 
-        other_basketid = "2"
+        other_basketid = "6"  # Use basket ID 6 for account username: ethereum@juice-sh.op    password: private
 
         if basketid and other_basketid:
             add_product_to_another_basket(token, basketid, other_basketid)
@@ -89,6 +92,9 @@ def add_product_to_my_cart(driver):
 def acquire_token(driver):
     
     cookies = driver.get_cookies()
+
+    # print(f"Cookies: " + {cookies})
+
     for cookie in cookies:
         if cookie['name'] == 'token':
             return cookie['value']
@@ -125,7 +131,13 @@ def acquire_basket_id(driver):
 def add_product_to_another_basket(token, basketid, other_users_basketid):
 
     # url = "http://localhost:3000/api/BasketItems"
-    url = "https://juice-shop.herokuapp.com/api/BasketItems"
+    # url = "https://juice-shop.herokuapp.com/api/BasketItems"
+    url = "http://localhost:3000/api/BasketItems"    # !!! /api/BasketItems is how you send api calls for local 3000/#/BasketItems
+
+    # basketAchievementCompletedAchievementURL = "http://localhost:3000/#/basket"  # Going to this URL completes the basket achievement after package sent
+
+
+    # print(f"Sending token: {token}")
     
     headers = {
         "Authorization": f"Bearer {token}", # 'f' here allows for string literals
@@ -134,23 +146,108 @@ def add_product_to_another_basket(token, basketid, other_users_basketid):
 
     # Product is added to the other user's basket here
     payload = {
-        "ProductId": 1,    # uses product ID of 14 as item to switch
+        "ProductId": 14,    # uses product ID of 14 as item to switch
         # "BasketId": basketid,      # Your basket ID gotten in main (might not need for payload actually...)
-        "quantity": 1,
-        "BasketId": other_users_basketid  # Target basket ID
+        "quantity": 5,
+
+        # Sending both below returns successful response_code but achievement isn't set for other basket, just your own
+        # "BasketId": basketid,
+        # "BasketId": other_users_basketid  # Target basket ID
     }
 
-    response = requests.post(url, json=payload, headers=headers)
+    response = requests.post(url, json=payload, headers=headers, params={
+        "BasketId": basketid,
+        "BasketId": other_users_basketid
+    })
+
+    # TODO: Is the above payload breaking because the basketid isn't in quotes like on the doc??
+
+    print("Sending reponse to json...")
+    # response = requests.post(url, json=payload, headers=headers)
+
+    # response = requests.post(url, json=payload, headers=headers, params={
+    #     "BasketId": other_users_basketid
+    # })
+
+    print(f"Response code: {response.status_code} from AdditonalItemInBasket")
+
+    responseid = 0
     
     if response.status_code == 200:
+
+        try:
+            response_json = response.json()  # Parse the response as JSON
+            print("Response Body:", json.dumps(response_json, indent=4))
+
+            responseid = response_json.get("data", {}).get("id")
+
+            if responseid:
+                print(f"Basket ID (id) extracted as responseid: {responseid}")
+            else:
+                print("ID not found in response.")
+
+        except json.JSONDecodeError:
+            print("Failed to decode response as JSON.")
+
         print("Product added to other user's basket!!!")
+
+        print("Checking basket_contents...")
+
+        verify_basket_content(other_users_basketid, token, responseid)
+
 
         # print(response.json_response)
     else:
-        print(f"Error: {response.status_code}, {response.text}, ID being sent {other_users_basketid}")
-    
+        print(f"Error: {response.status_code}, {response.text}")
+        print(f"IDs being sent {basketid} & {other_users_basketid}")
+
+    # time.sleep(2)    
+
+def verify_basket_content(basketid, token, apiIDNumber):
+    # Make GET request to verify the content of the basket
+    url = f"http://localhost:3000/api/BasketItems/{apiIDNumber}"
+
+    print(f"Checking api URL at: {url}")
+
+    headers = {
+        "Authorization": f"Bearer {token}",  # Bearer token for authentication
+    }
+
+    # Send GET request to check the contents of the basket
+    response = requests.get(url, headers=headers)
+
+    if response.status_code == 200:
+        try:
+            basket_content = response.json()  # Parse the response as JSON
+            print(f"Basket Content for Basket {basketid}:", json.dumps(basket_content, indent=4))
+            
+            # Now, handle the data correctly, check if the basket has the product
+            data = basket_content.get('data', {})
+            if data and data.get('ProductId') == 14:
+                print("Product successfully added to the basket!")
+
+                print("")
+
+                print("In first response id is the request number, and in second response shows basketid based on request")
+                print("number. This leads to basketId being null in the response, but due to it being a direction")
+                print("contact at api/BasketItems/basketID, then this is just the response being weird.")
+
+                print("")
+                print("Note, the achievement seems to not unlock due to some edge case, but the response json")
+                print("indicates that the request was passed, successful, and added the items to the users basket.")
+                print("This means it should complete the goal, but seems to not get marked in score-board...")
+                print("")
+
+            else:
+                print("Product not found in the basket.")
+        except json.JSONDecodeError:
+            print("Failed to decode basket content response as JSON.")
+    else:
+        print(f"Error: {response.status_code}, {response.text}")
+
+
 
 # what is purpose of this it was in the adminLogIn.py but confused on what it does
-# Adding here incase it is neccessary
+# Adding here incase it is neccessary -- This actually runs the code very required
 if __name__ == "__main__":
     main()
