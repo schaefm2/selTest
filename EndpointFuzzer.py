@@ -56,7 +56,7 @@ def print_requests():
 
 async def run_fuzzer(url):
 
-    with open("words.txt", "r") as f:
+    with open("endpoints.txt", "r") as f:
         content = f.read()
         words = content.split()
 

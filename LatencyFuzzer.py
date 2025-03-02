@@ -8,7 +8,7 @@ TEST_ENDPOINT1 = 'http://localhost:3000/'
 
 async def run_fuzzer(url):
 
-    with open("words.txt", "r") as f:
+    with open("endpoints.txt", "r") as f:
         content = f.read()
         words = content.split()
 
