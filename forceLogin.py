@@ -14,15 +14,6 @@ all_letters = string.ascii_letters.join(num_options)
 
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument('-method', required=True) # valid types: brute, dict, hard
-parser.add_argument('-username', nargs='?', const="admin@juice-sh.op", default="admin@juice-sh.op")
-parser.add_argument('-threads', nargs='?', const=1, type=int, default=1)
-args = parser.parse_args()
-method = str(args.method)
-username = str(args.username)
-threads = int(args.threads)
-
 
 def randomword():
     length = random.randint(3,7)
@@ -69,12 +60,11 @@ def start_tester(method, username):
     driver.quit()
     exit()
 
-def main():
+def begin(method, username, threads):
     p = []
-    if __name__ == '__main__':
-        for n in range(threads):
-            p.append(Process(target=start_tester, args=(method, username)))
-            p[n].start()
+    for n in range(threads):
+        p.append(Process(target=start_tester, args=(method, username)))
+        p[n].start()
 
 def databasePassword(driver, target):
 
@@ -139,7 +129,16 @@ def bruteForcePassword(driver, hardness, username):
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-method', required=True) # valid types: brute, dict, hard
+    parser.add_argument('-username', nargs='?', const="admin@juice-sh.op", default="admin@juice-sh.op")
+    parser.add_argument('-threads', nargs='?', const=1, type=int, default=1)
+    args = parser.parse_args()
+    method = str(args.method)
+    username = str(args.username)
+    threads = int(args.threads)
+
+    begin(method, username, threads)
 
 
 
