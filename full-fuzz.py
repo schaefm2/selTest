@@ -1,6 +1,10 @@
 from PyQt6.QtWidgets import QMainWindow, QApplication, QVBoxLayout, QWidget, QPushButton, QSlider, QFormLayout, QLabel
 import forceLogin
 import searchQuery
+import EndpointFuzzer
+import LatencyFuzzer
+import SelViewOtherBasket
+import AdditionalItemInBasket
 import sys
 from PyQt6.QtCore import Qt
 
@@ -21,13 +25,18 @@ class MainWindow(QWidget):
 		
 		apiButton = QPushButton("API Endpoint Scanner")
 		apiButton.setFixedSize(160,90)		
+		apiButton.pressed.connect(self.endpoint_fuzz)
 
-		self.threads = 1
+		latencyButton = QPushButton("Latency Tester")
+		latencyButton.setFixedSize(160,90)
+		latencyButton.pressed.connect(self.latency_fuzz)
+
 		self.DictButton = QPushButton("Dictionary Attack")
 		self.DictButton.pressed.connect(self.start_dict)
 		self.DictButton.setFixedSize(160, 90)
 		self.DictButton.setVisible(False)		
 
+		self.threads = 1
 		self.threadSlider = QSlider(Qt.Orientation.Horizontal, self)
 		self.threadSlider.setRange(1,8)
 		self.threadSlider.setSingleStep(1)
@@ -49,7 +58,7 @@ class MainWindow(QWidget):
 		self.layout.addWidget(htmlButton)
 		self.layout.addWidget(sqlButton)
 		self.layout.addWidget(apiButton)
-
+		self.layout.addWidget(latencyButton)
 
 		self.layout.addWidget(self.DictButton)
 		self.layout.addWidget(self.BruteButton)
@@ -75,6 +84,10 @@ class MainWindow(QWidget):
 		self.threadLabel.setText(f"Brute Force Thread Count: {value}")
 	def search_query(self):
 		searchQuery.main()
+	def endpoint_fuzz(self):
+		EndpointFuzzer.main()
+	def latency_fuzz(self):
+		LatencyFuzzer.main()
 
 def main():
 	app = QApplication(sys.argv)
