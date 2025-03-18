@@ -71,7 +71,8 @@ def add_product_to_basket(token, product_id, quantity, basket_id):
         "Content-Type": "application/json"
     }
 
-    print(f"payload contains in add_product_to_basket contains: product_id :{product_id}   quantity: {quantity}     basket_id: {basket_id}")
+    print(f"payload contains in add_product_to_basket contains:")
+    print(f"product_id :{product_id}   quantity: {quantity}     basket_id: {basket_id}")
 
     # Add product to basket with specified quantity
     payload = {
@@ -174,10 +175,23 @@ def navigate_to_basket(driver):
     print("Navigated to the basket page.")
 
     # Inspecting cookies shows negative item total, making you rich!
-    print("Inspecting cookies after navigating to basket:")
-    cookies = driver.get_cookies()
-    for cookie in cookies:
-        print(f"{cookie['name']}: {cookie['value']}")
+    # print("Inspecting cookies after navigating to basket:")
+    # cookies = driver.get_cookies()
+    # for cookie in cookies: 
+    #     print(f"{cookie['name']}: {cookie['value']}")
+
+    # basket_total = driver.execute_script("return sessionStorage.getItem('itemTotal');")
+    # if basket_total:
+    #     print(f"Basket total from sessionStorage: {basket_total}")
+    # else:
+    #     print("Basket total not found in sessionStorage.")
+
+    time.sleep(2)  # Wait a bit to allow the itemTotal be added in the server...
+
+    print("Inspecting sessionStorage after navigating to basket:")
+    session_storage = driver.execute_script("return window.sessionStorage;")
+    for key, value in session_storage.items():
+        print(f"{key}: {value}")
 
     time.sleep(3)  # Wait a bit to inspect the basket page
 

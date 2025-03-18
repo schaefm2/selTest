@@ -128,7 +128,7 @@ def view_other_basket(token, other_users_basketid):
             print("the admin account we're logged in as is basket ID 1.")
             print("Viewing the others users basket here allows us to get what should be private information,")
             print("and a real world example could be used to mine and store user data which could then be sold") 
-            print("or used in some other unwanted manor.")
+            print("or used in some other unwanted manner.")
             print()
         
         except json.JSONDecodeError:

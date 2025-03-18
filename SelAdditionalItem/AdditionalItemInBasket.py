@@ -230,12 +230,11 @@ def verify_basket_content(basketid, token, apiIDNumber):
 
                 print("In first response id is the request number, and in second response shows basketid based on request")
                 print("number. This leads to basketId being null in the response, but due to it being a direction")
-                print("contact at api/BasketItems/basketID, then this is just the response being weird.")
+                print("contact at api/BasketItems/basketID, then this is just the response directly from the server.")
 
                 print("")
-                print("Note, the achievement seems to not unlock due to some edge case, but the response json")
-                print("indicates that the request was passed, successful, and added the items to the users basket.")
-                print("This means it should complete the goal, but seems to not get marked in score-board...")
+                print("The response json indicates that the request was passed, successful, and added")
+                print("the items to the users basket. This means it should complete the goal.")
                 print("")
 
             else:
