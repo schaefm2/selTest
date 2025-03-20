@@ -9,32 +9,28 @@ import sys
 from PyQt6.QtCore import Qt
 
 
+def add_button(text, fun, vis):
+	out = QPushButton(text)
+	out.setFixedSize(160, 90)
+	out.setVisible(vis)
+	out.pressed.connect(fun)
+	return out
+
+
 class MainWindow(QWidget):
 	def __init__(self):
 		super().__init__()
-		loginButton = QPushButton("Forced Login Methods")
-		loginButton.setFixedSize(160,90)
-		loginButton.clicked.connect(self.show_login)
-		
-		htmlButton = QPushButton("HTML Manipulation")
-		htmlButton.setFixedSize(160,90)
-
-		sqlButton = QPushButton("SQL Injection")
-		sqlButton.setFixedSize(160,90)	
-		sqlButton.pressed.connect(self.search_query)
-		
-		apiButton = QPushButton("API Endpoint Scanner")
-		apiButton.setFixedSize(160,90)		
-		apiButton.pressed.connect(self.endpoint_fuzz)
-
-		latencyButton = QPushButton("Latency Tester")
-		latencyButton.setFixedSize(160,90)
-		latencyButton.pressed.connect(self.latency_fuzz)
-
-		self.DictButton = QPushButton("Dictionary Attack")
-		self.DictButton.pressed.connect(self.start_dict)
-		self.DictButton.setFixedSize(160, 90)
-		self.DictButton.setVisible(False)		
+		self.layout = QVBoxLayout()
+		self.buttons = []
+		self.login_buttons = []
+		self.html_buttons = []
+		self.buttons.append(add_button("Forced Login Methods", self.show_login, True))
+		self.buttons.append(add_button("HTML Manipulation", self.show_html, True))
+		self.buttons.append(add_button("SQL Injection", self.search_query, True))
+		self.buttons.append(add_button("API Endpoint Scanner", self.endpoint_fuzz, True))
+		self.buttons.append(add_button("Latency Tester", self.latency_fuzz, True))
+		self.buttons.append(add_button("Login: Dictionary Attack", self.start_dict, False))
+		self.login_buttons.append(self.buttons[-1])
 
 		self.threads = 1
 		self.threadSlider = QSlider(Qt.Orientation.Horizontal, self)
@@ -43,35 +39,36 @@ class MainWindow(QWidget):
 		self.threadSlider.setFixedSize(160, 20)
 		self.threadSlider.valueChanged.connect(self.update_threads)
 		self.threadSlider.setVisible(False)
+		self.buttons.append(self.threadSlider)
+		self.login_buttons.append(self.buttons[-1])
 
-		self.threadLabel = QLabel('Brute Force Thread Count: 1', self)
+		self.threadLabel = QLabel(f'Brute Force Thread Count: {self.threads}', self)
 		self.threadLabel.setFixedSize(160, 20)
 		self.threadLabel.setVisible(False)
+		self.buttons.append(self.threadLabel)
+		self.login_buttons.append(self.buttons[-1])
 
-		self.BruteButton = QPushButton("Brute Force Attack")
-		self.BruteButton.setFixedSize(160, 90)
-		self.BruteButton.pressed.connect(self.start_brute)
-		self.BruteButton.setVisible(False)	
+		self.buttons.append("Login: Brute Force Attack", self.start_brute, False)
+		self.login_buttons.append(self.buttons[-1])
 
-		self.layout = QVBoxLayout()
-		self.layout.addWidget(loginButton)
-		self.layout.addWidget(htmlButton)
-		self.layout.addWidget(sqlButton)
-		self.layout.addWidget(apiButton)
-		self.layout.addWidget(latencyButton)
+		self.buttons.append(add_button("HTML: Add Items", additional, False))
+		self.html_buttons.append(self.buttons[-1])
+		self.buttons.append(add_button("HTML: View Another's Basket", view_basket, False))
+		self.html_buttons.append(self.buttons[-1])
 
-		self.layout.addWidget(self.DictButton)
-		self.layout.addWidget(self.BruteButton)
-		self.layout.addWidget(self.threadSlider)
-		self.layout.addWidget(self.threadLabel)
-
+		for button in self.buttons:
+			self.layout.addWidget(button)
+		
 		self.setLayout(self.layout)
 
 	def show_login(self):
-		self.DictButton.setVisible(not self.DictButton.isVisible())
-		self.BruteButton.setVisible(self.DictButton.isVisible())
-		self.threadSlider.setVisible(self.DictButton.isVisible())
-		self.threadLabel.setVisible(self.DictButton.isVisible())
+		state = not self.login_buttons[0].isVisible()
+		for button in self.login_buttons:
+			button.setVisible(state)
+	def show_html(self):
+		state = not self.html_buttons[0].isVisible()
+		for button in self.html_buttons:
+			button.setVisible(state)
 
 	def start_brute(self):
 		#print("Starting Brute Force Tester")
@@ -88,6 +85,10 @@ class MainWindow(QWidget):
 		EndpointFuzzer.main()
 	def latency_fuzz(self):
 		LatencyFuzzer.main()
+	def view_basket(self):
+		SelViewOtherBasket.main()
+	def additional(self):
+		AdditionalItemInBasket.main()
 
 def main():
 	app = QApplication(sys.argv)
