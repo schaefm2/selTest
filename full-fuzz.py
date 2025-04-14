@@ -48,12 +48,12 @@ class MainWindow(QWidget):
 		self.buttons.append(self.threadLabel)
 		self.login_buttons.append(self.buttons[-1])
 
-		self.buttons.append("Login: Brute Force Attack", self.start_brute, False)
+		self.buttons.append(add_button("Login: Brute Force Attack", self.start_brute, False))
 		self.login_buttons.append(self.buttons[-1])
 
-		self.buttons.append(add_button("HTML: Add Items", additional, False))
+		self.buttons.append(add_button("HTML: Add Items", self.additional, False))
 		self.html_buttons.append(self.buttons[-1])
-		self.buttons.append(add_button("HTML: View Another's Basket", view_basket, False))
+		self.buttons.append(add_button("HTML: View Another's Basket", self.view_basket, False))
 		self.html_buttons.append(self.buttons[-1])
 
 		for button in self.buttons:
